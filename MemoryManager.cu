@@ -61,13 +61,13 @@ public:
         }
 
         // Allocates requested_size bytes and returns a pointer to the allocated memory
-        void Mem_Alloc(size_t requested_size){
+        CUdeviceptr Mem_Alloc(size_t requested_size){
             // Round up requested_size to a multiple of the granularity and reserve the VM for it
             size_t size = ((requested_size + granularity - 1) / granularity) * granularity;
             auto base_check = vManager.reserve_region(size);
 
             if (!base_check){
-                return;
+                throw std::runtime_error(std::string("Cant reserve VM"));
             }
 
             // Mapping the VM to PM and setting permissions
@@ -80,6 +80,9 @@ public:
                 allocated_handles[base].push_back(handle);
 
             }
+
+            return base;
+
         }
 
         // Frees the memory space pointed to by ptr

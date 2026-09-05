@@ -1,4 +1,5 @@
 #include <cuda.h>
+#include <cuda_runtime.h>
 #include "MemoryManager.cu"
 
 int main() {
@@ -37,6 +38,26 @@ int main() {
     size_t requested_bytes = 1024 * 1024;
     manager.Mem_Alloc(requested_bytes);
     std::cout << "Successfully allocated 1MB." << std::endl;
+
+
+    // Now it is time to test for logically correctness
+
+    // 1, Testing out read and write
+    size_t bytes = sizeof(int);
+    CUdeviceptr d_ptr = manager.Mem_Alloc(bytes);
+    int host_send = 42;
+    int host_recv = 0;
+
+    // Write to GPU and then read it back
+    cuMemcpyHtoD(reinterpret_cast<CUdeviceptr>(d_ptr), &host_send, bytes);
+    cuMemcpyDtoH(&host_recv, reinterpret_cast<CUdeviceptr>(d_ptr), bytes);
+
+    //Verify the correctness
+    if (host_recv == host_send) {
+        std::cout << "Read/Write Test Passed: Read exactly " << host_recv << "." << std::endl;
+    } else {
+        std::cerr << "Memory Corruption: Expected " << host_send << " but got " << host_recv << "." << std::endl;
+    }
 
     return 0;
 }
