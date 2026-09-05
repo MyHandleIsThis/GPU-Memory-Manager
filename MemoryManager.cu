@@ -32,9 +32,6 @@ public:
 
         MemoryManager(){
 
-            cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM);
-            cuMemAddressReserve(&base_address, granularity * 2000, 0, 0, 0);
-
             accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
             accessDesc.location.id = 0;
             accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
@@ -42,6 +39,9 @@ public:
             prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
             prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
             prop.location.id = 0;
+
+            cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM);
+            cuMemAddressReserve(&base_address, granularity * 2000, 0, 0, 0);
 
             // Now initalize the virtual function with granularity and base address
             vManager = vMemory(base_address, granularity * 2000);
@@ -51,13 +51,14 @@ public:
         void Mem_Alloc(size_t requested_size){
             // Round up requested_size to a multiple of the granularity and reserve the VM for it
             size_t size = ((requested_size + granularity - 1) / granularity) * granularity;
-            auto base = vManager.reserve_region(size);
+            auto base_check = vManager.reserve_region(size);
 
-            if (!base){
+            if (!base_check){
                 return;
             }
 
             // Mapping the VM to PM and setting permissions
+            CUdeviceptr base = base_check.value();
             for (size_t i = 0; i < size / granularity; i++){
                 CUdeviceptr address = *base + i * granularity;
                 CUmemGenericAllocationHandle handle = pManager.pop_handle(granularity);
