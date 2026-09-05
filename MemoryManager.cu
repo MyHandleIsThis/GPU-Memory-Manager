@@ -60,11 +60,11 @@ public:
             // Mapping the VM to PM and setting permissions
             CUdeviceptr base = base_check.value();
             for (size_t i = 0; i < size / granularity; i++){
-                CUdeviceptr address = *base + i * granularity;
+                CUdeviceptr address = base + i * granularity;
                 CUmemGenericAllocationHandle handle = pManager.pop_handle(granularity);
                 cuMemMap(address, granularity, 0, handle, 0 );
                 cuMemSetAccess(address, granularity, &accessDesc, 1);
-                allocated_handles[*base].push_back(handle);
+                allocated_handles[base].push_back(handle);
 
             }
         }
