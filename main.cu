@@ -85,6 +85,28 @@ int main() {
         std::cerr << "Allocation entirely failed." << std::endl;
     }
 
+    // 3. Fragmentation Test
+    // Free the middle chunk to create a 2MB hole
+    size_t chunk_size = 2 * 1024 * 1024; // 2MB
+    CUdeviceptr chunkA = manager.Mem_Alloc(chunk_size);
+    CUdeviceptr chunkB = manager.Mem_Alloc(chunk_size);
+    CUdeviceptr chunkC = manager.Mem_Alloc(chunk_size);
+    manager.Mem_Free(chunkB);
+
+    // Request a 1MB block (assuming granularity is <= 1MB)
+    // It should fit perfectly inside the old chunkB address space.
+    CUdeviceptr split_chunk = manager.Mem_Alloc(1024 * 1024);
+
+    if (split_chunk == chunkB) {
+        std::cout << "Fragmentation Test Passed: Allocator reused and split the hole." << std::endl;
+    } else {
+        std::cerr << "Fragmentation Test Failed: Allocator ignored the hole." << std::endl;
+    }
+
+    manager.Mem_Free(chunkA);
+    manager.Mem_Free(chunkC);
+    manager.Mem_Free(split_chunk); // Note: We only free the 1MB we took!
+
 
     return 0;
 }

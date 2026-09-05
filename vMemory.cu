@@ -172,6 +172,10 @@ class vMemory {
         // We will assume that requested_size is aligned to the granularity
         std::optional<CUdeviceptr> reserve_region(size_t requested_size){
 
+                if (requested_size > max_size){
+                        return std::nullopt;
+                }
+
                 auto pair = free_pages_by_size.lower_bound(requested_size);
 
                 if (pair == free_pages_by_size.end()) { // No valid page was found
