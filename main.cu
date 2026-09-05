@@ -59,5 +59,7 @@ int main() {
         std::cerr << "Memory Corruption: Expected " << host_send << " but got " << host_recv << "." << std::endl;
     }
 
+    manager.Mem_Free(d_ptr);
+
     return 0;
 }
