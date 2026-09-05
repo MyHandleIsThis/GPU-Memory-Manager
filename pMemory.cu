@@ -4,6 +4,7 @@
 #include <map>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdexcept>
 
 
 
@@ -34,7 +35,7 @@ class pMemory{
                         const char* errStr;
                         cuGetErrorString(res, &errStr);
                         std::cerr << "CRITICAL CUDA ERROR: cuMemCreate failed with: " << errStr << std::endl;
-                        exit(1); // Force the program to stop here so we can see why it failed
+                        return;
                 }
 
                 free_handles.push_back(handle);
