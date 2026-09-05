@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdexcept>
+
 
 
 
@@ -32,6 +34,20 @@ public:
 
         MemoryManager(){
 
+            CUdevice device;
+            CUresult resDev = cuDeviceGet(&device, 0);
+            if (resDev != CUDA_SUCCESS) {
+                std::cerr << "Failed to get CUDA device. Is a GPU attached?" << std::endl;
+                return -1;
+            }
+
+            CUcontext context;
+            CUresult resCtx = cuCtxCreate(&context, 0, device);
+            if (resCtx != CUDA_SUCCESS) {
+                std::cerr << "Failed to create CUDA context." << std::endl;
+                return -1;
+            }
+
             accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
             accessDesc.location.id = 0;
             accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
@@ -40,7 +56,18 @@ public:
             prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
             prop.location.id = 0;
 
-            cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM);
+            CUresult res = cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM);
+
+            if (res != CUDA_SUCCESS) {
+                const char* errStr;
+                cuGetErrorString(res, &errStr);
+                throw std::runtime_error(std::string("Granularity query failed: ") + errStr);
+            }
+
+            if (granularity == 0) {
+                throw std::runtime_error("Granularity returned as 0!");
+            }
+
             cuMemAddressReserve(&base_address, granularity * 2000, 0, 0, 0);
 
             // Now initalize the virtual function with granularity and base address
