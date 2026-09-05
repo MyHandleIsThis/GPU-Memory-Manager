@@ -61,5 +61,30 @@ int main() {
 
     manager.Mem_Free(d_ptr);
 
+    // 2. Coalescing Test
+    size_t block_size = 2 * 1024 * 1024;
+    CUdeviceptr ptr1 = manager.Mem_Alloc(block_size);
+    CUdeviceptr ptr2 = manager.Mem_Alloc(block_size);
+    CUdeviceptr ptr3 = manager.Mem_Alloc(block_size);
+
+    // Freeing all three blocks in a way that allows left + middle + right coalescing
+    manager.Mem_Free(ptr1);
+    manager.Mem_Free(ptr3);
+    manager.Mem_Free(ptr2);
+
+    CUdeviceptr ptr4 = manager.Mem_Alloc(3*block_size);
+
+    if (ptr4 == ptr1) {
+        std::cout << "Coalescing Test Passed: Successfully merged and reused the exact same memory." << std::endl;
+        manager.Mem_Free(ptr4);
+    } else if (ptr4 != 0) {
+        std::cerr << "Coalescing Test Failed: Blocks did not merge. Allocator pulled from the giant pool." << std::endl;
+        // We got memory, but not from our merged blocks
+        manager.Mem_Free(ptr4);
+    } else {
+        std::cerr << "Allocation entirely failed." << std::endl;
+    }
+
+
     return 0;
 }
