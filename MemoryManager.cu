@@ -34,20 +34,6 @@ public:
 
         MemoryManager(){
 
-            CUdevice device;
-            CUresult resDev = cuDeviceGet(&device, 0);
-            if (resDev != CUDA_SUCCESS) {
-                std::cerr << "Failed to get CUDA device. Is a GPU attached?" << std::endl;
-                return -1;
-            }
-
-            CUcontext context;
-            CUresult resCtx = cuCtxCreate(&context, 0, device);
-            if (resCtx != CUDA_SUCCESS) {
-                std::cerr << "Failed to create CUDA context." << std::endl;
-                return -1;
-            }
-
             accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
             accessDesc.location.id = 0;
             accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
