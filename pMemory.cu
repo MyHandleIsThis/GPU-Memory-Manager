@@ -31,8 +31,10 @@ class pMemory{
                 CUresult  res = cuMemCreate(&handle, granularity, &prop, 0);
 
                 if (res != CUDA_SUCCESS) {
-                        print("cuMemCreate failed");
-                        return;
+                        const char* errStr;
+                        cuGetErrorString(res, &errStr);
+                        std::cerr << "CRITICAL CUDA ERROR: cuMemCreate failed with: " << errStr << std::endl;
+                        exit(1); // Force the program to stop here so we can see why it failed
                 }
 
                 free_handles.push_back(handle);
