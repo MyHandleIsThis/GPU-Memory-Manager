@@ -31,7 +31,7 @@ class pMemory{
                 CUresult  res = cuMemCreate(&handle, granularity, &prop, 0);
 
                 if (res != CUDA_SUCCESS) {
-                        // TODO: Handle Error
+                        print("cuMemCreate failed");
                         return;
                 }
 
