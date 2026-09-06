@@ -13,18 +13,16 @@ void* my_malloc(ssize_t size, int device, cudaStream_t stream) {
         CUresult res = cuInit(0);
         cudaSetDevice(device);
         manager = new MemoryManager();
-        std::cout << "Custom Allocator Initialized." << std::endl;
     }
 
-    std::cout << "Allocating Memory!" << std::endl;
     CUdeviceptr ptr = manager->Mem_Alloc(static_cast<size_t>(size));
     return reinterpret_cast<void*>(ptr);
 }
 
 void my_free(void* ptr, ssize_t size, int device, cudaStream_t stream) {
-    std::cout << "Freeing Memory" << std::endl;
 
     if (manager && ptr != nullptr) {
+        cudaDeviceSynchronize();
         manager->Mem_Free(reinterpret_cast<CUdeviceptr>(ptr));
     }
 }
