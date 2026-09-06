@@ -7,7 +7,7 @@ INCLUDES = -I.
 LDFLAGS = -lcuda
 
 TARGET = memory_manager
-SRC = main.cu
+SRC = tests/main.cu
 
 $(TARGET): $(SRC)
 	$(NVCC) $(NVCCFLAGS) $(INCLUDES) $(SRC) -o $(TARGET) $(LDFLAGS)

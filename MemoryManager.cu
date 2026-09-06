@@ -104,6 +104,6 @@ public:
             allocated_handles.erase(it);
         }
 
-
+    // TODO: Create a deconstructor to free memory
 
 };
