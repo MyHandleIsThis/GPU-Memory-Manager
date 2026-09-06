@@ -61,13 +61,7 @@ torch.cuda.memory.change_current_allocator(new_alloc)
 tensor = torch.ones((1024, 1024), device='cuda')
 Alternatively, you can set it globally via environment variables before running your script:
 
-Bash
-export PYTORCH_CUDA_ALLOC_CONF="backend:pluggable,allocator_path:./custom_allocator.so,alloc_func:my_malloc,free_func:my_free"
-3. Running the Benchmark
-To run the unified cross-framework benchmark (CuPy -> PyTorch):
-
-Bash
 ### Run baseline (Siloed memory pools)
 python tests/benchmark.py
-# Run unified allocator
+### Run unified allocator
 python tests/benchmark.py --custom-allocator
