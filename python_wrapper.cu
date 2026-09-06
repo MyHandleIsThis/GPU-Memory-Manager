@@ -4,21 +4,28 @@
 #include <iostream>
 
 
-static MemoryManager manager = MemoryManager();
+static MemoryManager* manager = nullptr;
 
 extern "C" {
-    void* my_malloc(ssize_t size, int device, cudaStream_t stream) {
-        // PyTorch passes signed sizes; cast to size_t for your manager
-        std::cout << "Allocating Memory!" << std::endl;
-        CUdeviceptr ptr = manager.Mem_Alloc(static_cast<size_t>(size));
-        return reinterpret_cast<void*>(ptr);
+void* my_malloc(ssize_t size, int device, cudaStream_t stream) {
+    // PyTorch passes signed sizes; cast to size_t for your manager
+    if (!manager){
+        CUresult res = cuInit(0);
+        cudaSetDevice(device);
+        manager = new MemoryManager();
+        std::cout << "Custom Allocator Initialized." << std::endl;
     }
 
-    void my_free(void* ptr, ssize_t size, int device, cudaStream_t stream) {
-        std::cout << "Freeing Memory" << std::endl;
+    std::cout << "Allocating Memory!" << std::endl;
+    CUdeviceptr ptr = manager->Mem_Alloc(static_cast<size_t>(size));
+    return reinterpret_cast<void*>(ptr);
+}
 
-        if (ptr != nullptr) {
-            manager.Mem_Free(reinterpret_cast<CUdeviceptr>(ptr));
-        }
+void my_free(void* ptr, ssize_t size, int device, cudaStream_t stream) {
+    std::cout << "Freeing Memory" << std::endl;
+
+    if (manager && ptr != nullptr) {
+        manager->Mem_Free(reinterpret_cast<CUdeviceptr>(ptr));
     }
+}
 }
